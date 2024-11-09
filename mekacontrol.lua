@@ -52,38 +52,27 @@ local function info()
         local localEnergyDisplay = string.format("%.2f", energy)
         if energy < 1000 then
             localEnergyDisplay = energy .. (feByT and " FE/t" or " FE")
-        else if energy > 1000 then
+        elseif energy > 1000 and energy < 1e6 then
             localEnergyDisplay = string.format("%.2f", energy / 1000) .. (feByT and " kFE/t" or " kFE")
-        else if energy > 1e6 then
+        elseif energy > 1e6 and energy < 1e9 then
             localEnergyDisplay = string.format("%.2f", energy / 1e6) .. (feByT and " MFE/t" or " MFE")
-        else if energy > 1e9 then
+        elseif energy > 1e9 and energy < 1e12 then
             localEnergyDisplay = string.format("%.2f", energy / 1e9) .. (feByT and " GFE/t" or " GFE")
-        else if energy > 1e12 then
+        elseif energy > 1e12 and energy < 1e15 then
             localEnergyDisplay = string.format("%.2f", energy / 1e12) .. (feByT and " TFE/t" or " TFE")
-        else if energy > 1e15 then
+        elseif energy > 1e15 then
             localEnergyDisplay = string.format("%.2f", energy / 1e15) .. (feByT and " PFE/t" or " PFE")
         end
         return localEnergyDisplay
     end
 
 
-    local production = mekanismEnergyHelper.joulesToFE(trb.getProductionRate())
-    local prodDisp = formatEnergy(production, true)
-
-    local input = mekanismEnergyHelper.joulesToFE(ind.getLastInput())
-    local inputDisp = formatEnergy(input, true)
-
-
-    local output = mekanismEnergyHelper.joulesToFE(ind.getLastOutput())
-    local outputDisp = formatEnergy(output, true)
-
-    local energy = mekanismEnergyHelper.joulesToFE(ind.getEnergy())
-    local energyDisp = formatEnergy(energy, false)
-
-    local maxEnergy = mekanismEnergyHelper.joulesToFE(ind.getMaxEnergy())
-    local maxEnergyDisp = formatEnergy(maxEnergy, false)
-
-    local epercent = math.ceil(ind.getEnergyFilledPercentage() * 100)
+    local prodDisp = formatEnergy(mekanismEnergyHelper.joulesToFE(trb.getProductionRate()), true)
+    local inputDisp = formatEnergy(mekanismEnergyHelper.joulesToFE(ind.getLastInput()), true)
+    local outputDisp = formatEnergy(mekanismEnergyHelper.joulesToFE(ind.getLastOutput()), true)
+    local energyDisp = formatEnergy(mekanismEnergyHelper.joulesToFE(ind.getEnergy()), false)
+    local maxEnergyDisp = formatEnergy(mekanismEnergyHelper.joulesToFE(ind.getMaxEnergy()), false)
+    local epercentDisp = math.ceil(ind.getEnergyFilledPercentage() * 100)
 
     mon.clear()
     mon.setCursorPos(1,1) mon.setTextColor(16) mon.write("Fission Reactor")
@@ -107,7 +96,7 @@ local function info()
     mon.setCursorPos(1,19) mon.setTextColor(8192) mon.write("Input: ") mon.setTextColor(1) mon.write(inputDisp)
     mon.setCursorPos(1,20) mon.setTextColor(8192) mon.write("Output: ") mon.setTextColor(1) mon.write(outputDisp)
     mon.setCursorPos(1,21) mon.setTextColor(8192) mon.write("Energy: ") mon.setTextColor(1) mon.write(energyDisp .. "/" .. maxEnergyDisp)
-    mon.setCursorPos(1,22) mon.setTextColor(8192) mon.write("Filled: ") mon.setTextColor(1) mon.write(epercent .. "%")
+    mon.setCursorPos(1,22) mon.setTextColor(8192) mon.write("Filled: ") mon.setTextColor(1) mon.write(epercentDisp .. "%")
 
     mon.setCursorPos(1,24) mon.setTextColor(16384) mon.write("SCRAM COUNT: ") mon.write(string.format("%3.0f", scramCount))
 end
