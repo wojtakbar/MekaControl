@@ -1,3 +1,8 @@
+-- CREDITS TO: ShaeTsuPog
+-- https://github.com/ShaeTsuPog/MekaControl/blob/main/mekacontrol.lua
+
+-- trimmed by: wojtakbar ^-^
+
 local rla = peripheral.find("fissionReactorLogicAdapter")
 local boi = peripheral.find("boilerValve")
 local trb = peripheral.find("turbineValve")
@@ -6,19 +11,13 @@ local mon = peripheral.find("monitor")
 local scramCount = 0
 
 local function regulator()
-
     local coolant = math.ceil(rla.getCoolantFilledPercentage() * 100)
     local heated = math.ceil(rla.getHeatedCoolantFilledPercentage() * 100)
     local waste = math.ceil(rla.getWasteFilledPercentage() * 100)
     local damage = rla.getDamagePercent()
     local energy = math.ceil(ind.getEnergyFilledPercentage() * 100)
 
-    local status = ""
-    if rla.getStatus() then
-        status = "true"
-    else
-        status = "false"
-    end
+    local status = rla.getStatus() and "Online" or "Offline"
 
     if coolant > 70 and heated < 70 and waste < 70 and damage < 1 and energy < 90 and status == "false"
     then
@@ -47,92 +46,42 @@ local function info()
     local bwater = math.ceil(boi.getWaterFilledPercentage() * 100)
     local bsteam = math.ceil(boi.getSteamFilledPercentage() * 100)
 
-    local status = ""
+    local status = rla.getStatus() and "Online" or "Offline"
 
-    if rla.getStatus() then
-        status = "Online"
-    else
-        status = "Offline"
+    local function formatEnergy(energy, feByT)
+        local localEnergyDisplay = string.format("%.2f", energy)
+        if energy < 1000 then
+            localEnergyDisplay = energy .. (feByT and " FE/t" or " FE")
+        else if energy > 1000 then
+            localEnergyDisplay = string.format("%.2f", energy / 1000) .. (feByT and " kFE/t" or " kFE")
+        else if energy > 1e6 then
+            localEnergyDisplay = string.format("%.2f", energy / 1e6) .. (feByT and " MFE/t" or " MFE")
+        else if energy > 1e9 then
+            localEnergyDisplay = string.format("%.2f", energy / 1e9) .. (feByT and " GFE/t" or " GFE")
+        else if energy > 1e12 then
+            localEnergyDisplay = string.format("%.2f", energy / 1e12) .. (feByT and " TFE/t" or " TFE")
+        else if energy > 1e15 then
+            localEnergyDisplay = string.format("%.2f", energy / 1e15) .. (feByT and " PFE/t" or " PFE")
+        end
+        return localEnergyDisplay
     end
+
 
     local production = mekanismEnergyHelper.joulesToFE(trb.getProductionRate())
-
-    local prodDisp = string.format("%.2f", production)
-    if production < 1000 then
-        prodDisp = production .. " FE/t"
-    end
-    if production > 1000 then
-        prodDisp = string.format("%.2f", production / 1000) .. " kFE/t"
-    end
-    if production > 1e6 then
-        prodDisp = string.format("%.2f", production / 1e6) .. " MFE/t"
-    end
-    if production > 1e9 then
-        prodDisp = string.format("%.2f", production / 1e9) .. " GFE/t"
-    end
-    if production > 1e12 then
-        prodDisp = string.format("%.2f", production / 1e12) .. " TFE/t"
-    end
+    local prodDisp = formatEnergy(production, true)
 
     local input = mekanismEnergyHelper.joulesToFE(ind.getLastInput())
+    local inputDisp = formatEnergy(input, true)
 
-    local inputDisp = string.format("%.2f", input)
-    if input < 1000 then
-        inputDisp = input .. " FE/t"
-    end
-    if input > 1000 then
-        inputDisp = string.format("%.2f", input / 1000) .. " kFE/t"
-    end
-    if input > 1e6 then
-        inputDisp = string.format("%.2f", input / 1e6) .. " MFE/t"
-    end
-    if input > 1e9 then
-        inputDisp = string.format("%.2f", input / 1e9) .. " GFE/t"
-    end
-    if input > 1e12 then
-        inputDisp = string.format("%.2f", input / 1e12) .. " TFE/t"
-    end
 
     local output = mekanismEnergyHelper.joulesToFE(ind.getLastOutput())
-
-    local outputDisp = string.format("%.2f", output)
-    if output < 1000 then
-        outputDisp = output .. " FE/t"
-    end
-    if output > 1000 then
-        outputDisp = string.format("%.2f", output / 1000) .. " kFE/t"
-    end
-    if output > 1e6 then
-        outputDisp = string.format("%.2f", output / 1e6) .. " MFE/t"
-    end
-    if output > 1e9 then
-        outputDisp = string.format("%.2f", output / 1e9) .. " GFE/t"
-    end
-    if output > 1e12 then
-        outputDisp = string.format("%.2f", output / 1e12) .. " TFE/t"
-    end
+    local outputDisp = formatEnergy(output, true)
 
     local energy = mekanismEnergyHelper.joulesToFE(ind.getEnergy())
+    local energyDisp = formatEnergy(energy, false)
 
-    local energyDisp = string.format("%.2f", energy)
-    if energy < 1000 then
-        energyDisp = energy .. " FE"
-    end
-    if energy > 1000 then
-        energyDisp = string.format("%.2f", energy / 1000) .. " kFE"
-    end
-    if energy > 1e6 then
-        energyDisp = string.format("%.2f", energy / 1e6) .. " MFE"
-    end
-    if energy > 1e9 then
-        energyDisp = string.format("%.2f", energy / 1e9) .. " GFE"
-    end
-    if energy > 1e12 then
-        energyDisp = string.format("%.2f", energy / 1e12) .. " TFE"
-    end
-    if energy > 1e15 then
-        energyDisp = string.format("%.2f", energy / 1e15) .. " PFE"
-    end
+    local maxEnergy = mekanismEnergyHelper.joulesToFE(ind.getMaxEnergy())
+    local maxEnergyDisp = formatEnergy(maxEnergy, false)
 
     local epercent = math.ceil(ind.getEnergyFilledPercentage() * 100)
 
@@ -157,7 +106,7 @@ local function info()
     mon.setCursorPos(1,18) mon.setTextColor(16) mon.write("Induction Matrix")
     mon.setCursorPos(1,19) mon.setTextColor(8192) mon.write("Input: ") mon.setTextColor(1) mon.write(inputDisp)
     mon.setCursorPos(1,20) mon.setTextColor(8192) mon.write("Output: ") mon.setTextColor(1) mon.write(outputDisp)
-    mon.setCursorPos(1,21) mon.setTextColor(8192) mon.write("Energy: ") mon.setTextColor(1) mon.write(energyDisp)
+    mon.setCursorPos(1,21) mon.setTextColor(8192) mon.write("Energy: ") mon.setTextColor(1) mon.write(energyDisp .. "/" .. maxEnergyDisp)
     mon.setCursorPos(1,22) mon.setTextColor(8192) mon.write("Filled: ") mon.setTextColor(1) mon.write(epercent .. "%")
 
     mon.setCursorPos(1,24) mon.setTextColor(16384) mon.write("SCRAM COUNT: ") mon.write(string.format("%3.0f", scramCount))
