@@ -2,7 +2,7 @@
 local rla, boi, trb, ind, mon = peripheral.find("fissionReactorLogicAdapter"), peripheral.find("boilerValve"), peripheral.find("turbineValve"), peripheral.find("inductionPort"), peripheral.find("monitor")
 local scramCount = 0
 local function regulator()
-    local coolant, heated, waste, damage, energy, status = math.ceil(rla.getCoolantFilledPercentage() * 100), math.ceil(rla.getHeatedCoolantFilledPercentage() * 100), math.ceil(rla.getWasteFilledPercentage() * 100), rla.getDamagePercent(), math.ceil(ind.getEnergyFilledPercentage() * 100), rla.getStatus() and "Online" or "Offline"
+    local coolant, heated, waste, damage, energy, status = math.ceil((rla.getCoolantFilledPercentage() or 0) * 100), math.ceil((rla.getHeatedCoolantFilledPercentage() or 0) * 100), math.ceil((rla.getWasteFilledPercentage() or 0) * 100), rla.getDamagePercent(), math.ceil((ind.getEnergyFilledPercentage() or 0) * 100), rla.getStatus() and "Online" or "Offline"
     local function renderStatus(coolant, heated, waste, energy) print("ACTIVATED | INFO: " .. "C:" .. string.format("%3.0f", coolant) .. "%", "H:" .. string.format("%3.0f", heated) .. "%", "W:" .. string.format("%3.0f", waste) .. "%", "E:" .. string.format("%3.0f", energy) .. "%") end
     if coolant > 70 and heated < 70 and waste < 70 and damage < 1 and energy < 90 and status == "false" then rla.activate();renderStatus(coolant, heated, waste, energy) elseif status == "true" and (coolant <= 70 or heated >= 70 or waste >= 70 or damage >= 1 or energy >= 90) then rla.scram();renderStatus(coolant, heated, waste, energy);scramCount = scramCount + 1 end
 end
